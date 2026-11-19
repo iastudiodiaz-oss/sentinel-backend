@@ -12,7 +12,7 @@ const {
   generateSixDigitCode,
   hashCode
 } = require('../utils/token');
-const { transporter, buildVerificationEmailHtml } = require('../config/mailer');
+const { transporter, buildVerificationEmailHtml, buildPasswordResetEmailHtml } = require('../config/mailer');
 const logger = require('../utils/logger');
 
 class AuthService {
@@ -281,6 +281,50 @@ class AuthService {
       await db.query('UPDATE refresh_tokens SET is_revoked = TRUE WHERE token_hash = $1', [tokenHashed]);
     }
     return { success: true, message: 'Sesión cerrada correctamente.' };
+  }
+
+  /**
+   * 6. Recuperación de Credenciales por Correo
+   */
+  async forgotPassword(email) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Buscar usuario en base de datos
+    const userRes = await db.query(
+      'SELECT id, name, email, friend_code FROM users WHERE email = $1',
+      [cleanEmail]
+    );
+
+    if (userRes.rows.length === 0) {
+      const error = new Error('No existe ninguna cuenta registrada con este correo electrónico.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const user = userRes.rows[0];
+
+    // Generar contraseña temporal segura
+    const tempPassword = `Sentinel-${Math.floor(100000 + Math.random() * 900000)}`;
+    const hashedPassword = await hashPassword(tempPassword);
+
+    // Actualizar contraseña en la base de datos
+    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, user.id]);
+
+    // Enviar correo oficial con Resend
+    await transporter.sendMail({
+      from: `"Sentinel Security" <seguridad@diaziastudio.com>`,
+      to: `"${user.name}" <${user.email}>`,
+      subject: `🛡️ Recuperación de Acceso Sentinel // Tus Credenciales`,
+      html: buildPasswordResetEmailHtml(user.name, user.friend_code, user.email, tempPassword)
+    });
+
+    logger.info(`Correo de recuperación de contraseña enviado exitosamente a ${cleanEmail}`);
+
+    return {
+      email: user.email,
+      name: user.name,
+      message: `Se ha enviado un correo a ${user.email} con tu usuario, código y una nueva contraseña de acceso temporal.`
+    };
   }
 }
 

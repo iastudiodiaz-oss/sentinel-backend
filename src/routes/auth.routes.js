@@ -25,7 +25,10 @@ router.post('/refresh-token', authController.refreshToken);
 // 5. Cierre de sesión (Revocación de Refresh Token)
 router.post('/logout', authController.logout);
 
-// 6. Obtener perfil autenticado actual (Protegido por JWT)
+// 6. Recuperación de credenciales / contraseña por correo
+router.post('/forgot-password', authLimiter, authController.forgotPassword);
+
+// 7. Obtener perfil autenticado actual (Protegido por JWT)
 router.get('/me', authenticateJwt, authController.getMe);
 
 module.exports = router;

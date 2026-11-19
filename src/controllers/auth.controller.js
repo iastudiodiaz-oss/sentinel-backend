@@ -57,6 +57,19 @@ class AuthController {
     }
   }
 
+  async forgotPassword(req, res, next) {
+    try {
+      const { email } = req.body;
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ success: false, message: 'Por favor, introduce un correo electrónico válido.' });
+      }
+      const result = await authService.forgotPassword(email);
+      return successResponse(res, result, result.message, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getMe(req, res) {
     return successResponse(res, { user: req.user }, 'Perfil de usuario autenticado.');
   }
