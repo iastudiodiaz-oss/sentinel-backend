@@ -48,6 +48,29 @@ class ChatController {
       next(err);
     }
   }
+
+  async sendMessage(req, res, next) {
+    try {
+      const { friendCode, friendId, content, type, mediaUrl } = req.body;
+      const target = friendCode || friendId;
+      const message = await chatService.sendMessage(req.user.id, target, content, type, mediaUrl);
+      return sendSuccess(res, message, 'Mensaje enviado correctamente.', 201);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getDirectMessages(req, res, next) {
+    try {
+      const { friendCode, friendId } = req.query;
+      const target = friendCode || friendId;
+      const limit = parseInt(req.query.limit, 10) || 100;
+      const messages = await chatService.getDirectChatMessages(req.user.id, target, limit);
+      return sendSuccess(res, messages);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new ChatController();

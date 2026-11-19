@@ -201,6 +201,100 @@ class ChatService {
       client.release();
     }
   }
+
+  /**
+   * Envia un mensaje directo a un amigo (por codigo SN-XXXX o por userId).
+   */
+  async sendMessage(userId, friendCodeOrId, content, type = 'TEXT', mediaUrl = null) {
+    if (!content || !content.trim()) {
+      const err = new Error('El contenido del mensaje no puede estar vacio.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const cleanCode = (friendCodeOrId || '').trim();
+    const friendRes = await db.query(
+      `SELECT id, name, friend_code FROM users WHERE friend_code ILIKE $1 OR id::text = $1 LIMIT 1;`,
+      [cleanCode]
+    );
+
+    if (friendRes.rows.length === 0) {
+      const err = new Error('Contacto no encontrado en la base de datos.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    const friend = friendRes.rows[0];
+    const directChat = await this.getOrCreateDirectChat(userId, friend.id);
+
+    const insertRes = await db.query(
+      `INSERT INTO messages (chat_id, sender_id, content, type, media_url, status)
+       VALUES ($1, $2, $3, $4, $5, 'SENT')
+       RETURNING id, chat_id, sender_id, content, type, status, created_at;`,
+      [directChat.id, userId, content.trim(), type, mediaUrl]
+    );
+
+    const msg = insertRes.rows[0];
+    return {
+      id: msg.id,
+      chatId: msg.chat_id,
+      senderId: msg.sender_id,
+      receiverId: friend.id,
+      friendCode: friend.friend_code,
+      content: msg.content,
+      type: msg.type,
+      status: msg.status,
+      createdAt: msg.created_at,
+      timestampMillis: new Date(msg.created_at).getTime()
+    };
+  }
+
+  /**
+   * Obtiene los mensajes directos entre el usuario y un amigo.
+   */
+  async getDirectChatMessages(userId, friendCodeOrId, limit = 100) {
+    const cleanCode = (friendCodeOrId || '').trim();
+    const friendRes = await db.query(
+      `SELECT id, name, friend_code FROM users WHERE friend_code ILIKE $1 OR id::text = $1 LIMIT 1;`,
+      [cleanCode]
+    );
+
+    if (friendRes.rows.length === 0) {
+      return [];
+    }
+
+    const friend = friendRes.rows[0];
+    const directChat = await this.getOrCreateDirectChat(userId, friend.id);
+
+    const query = `
+      SELECT 
+        m.id,
+        m.chat_id,
+        m.sender_id,
+        m.content,
+        m.type,
+        m.status,
+        m.created_at,
+        CASE WHEN m.sender_id = $1 THEN TRUE ELSE FALSE END AS is_me
+      FROM messages m
+      WHERE m.chat_id = $2
+      ORDER BY m.created_at ASC
+      LIMIT $3;
+    `;
+
+    const res = await db.query(query, [userId, directChat.id, limit]);
+    return res.rows.map(m => ({
+      id: m.id,
+      chatId: m.chat_id,
+      senderId: m.sender_id,
+      content: m.content,
+      type: m.type,
+      status: m.status,
+      createdAt: m.created_at,
+      timestampMillis: new Date(m.created_at).getTime(),
+      isMe: m.is_me
+    }));
+  }
 }
 
 module.exports = new ChatService();

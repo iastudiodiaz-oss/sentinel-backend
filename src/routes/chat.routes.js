@@ -14,6 +14,8 @@ router.use(authenticateToken);
 
 router.get('/', (req, res, next) => chatController.getUserChats(req, res, next));
 router.post('/direct', (req, res, next) => chatController.getOrCreateDirectChat(req, res, next));
+router.post('/send', (req, res, next) => chatController.sendMessage(req, res, next));
+router.get('/direct/messages', (req, res, next) => chatController.getDirectMessages(req, res, next));
 router.get('/:chatId/messages', (req, res, next) => chatController.getChatMessages(req, res, next));
 router.post('/group', (req, res, next) => chatController.createGroupChat(req, res, next));
 
