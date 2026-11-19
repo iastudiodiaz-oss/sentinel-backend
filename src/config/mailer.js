@@ -21,19 +21,19 @@ const buildVerificationEmailHtml = (name, code) => {
   <head>
     <meta charset="utf-8">
     <style>
-      body { background-color: #030706; color: #E4FFE9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; margin: 0; }
-      .card { background-color: #07130E; border: 1.5px solid #00FF66; border-radius: 14px; padding: 28px; max-width: 500px; margin: 0 auto; text-align: center; }
-      .logo { color: #00FF66; font-size: 24px; font-weight: bold; letter-spacing: 3px; font-family: monospace; }
-      .code-box { background-color: #0A2417; border: 2px dashed #00FF66; border-radius: 10px; padding: 18px; margin: 24px 0; font-size: 34px; font-weight: bold; letter-spacing: 8px; color: #00FF66; font-family: monospace; }
-      .info-text { color: #C5E5D0; font-size: 14px; line-height: 1.5; }
-      .warning { color: #8AA895; font-size: 12px; margin-top: 15px; }
-      .footer { color: #587965; font-size: 11px; margin-top: 25px; border-top: 1px solid #133321; padding-top: 15px; line-height: 1.4; }
+      body { background-color: #02050B; color: #E2F8FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; margin: 0; }
+      .card { background-color: #071222; border: 1.5px solid #00F0FF; border-radius: 14px; padding: 28px; max-width: 500px; margin: 0 auto; text-align: center; box-shadow: 0 0 25px rgba(0, 240, 255, 0.15); }
+      .logo { color: #00F0FF; font-size: 24px; font-weight: bold; letter-spacing: 3px; font-family: monospace; }
+      .code-box { background-color: #0C1E36; border: 2px dashed #00F0FF; border-radius: 10px; padding: 18px; margin: 24px 0; font-size: 34px; font-weight: bold; letter-spacing: 8px; color: #00F0FF; font-family: monospace; }
+      .info-text { color: #C5E5FF; font-size: 14px; line-height: 1.5; }
+      .warning { color: #7AA2C8; font-size: 12px; margin-top: 15px; }
+      .footer { color: #4B6E91; font-size: 11px; margin-top: 25px; border-top: 1px solid #133256; padding-top: 15px; line-height: 1.4; }
     </style>
   </head>
   <body>
     <div class="card">
       <div class="logo">SENTINEL // DÍAZ IA STUDIO</div>
-      <p style="color: #8AA895; font-size: 12px; letter-spacing: 1px; margin-top: 4px;">SISTEMA TÁCTICO DE UBICACIÓN & SEGURIDAD CIFRADA</p>
+      <p style="color: #7AA2C8; font-size: 12px; letter-spacing: 1px; margin-top: 4px;">SISTEMA TÁCTICO DE UBICACIÓN & SEGURIDAD CIFRADA</p>
       
       <p style="margin-top: 24px; font-size: 16px; font-weight: bold;">Hola ${name},</p>
       <p class="info-text">Se ha solicitado el alta de este terminal en Sentinel. Para verificar tu identidad y activar tu cuenta, introduce el siguiente código de seguridad:</p>
@@ -43,7 +43,7 @@ const buildVerificationEmailHtml = (name, code) => {
       <p class="warning">🔒 Este código es estrictamente confidencial, de un solo uso y caduca en 10 minutos.<br>Si tú no has iniciado este registro, puedes ignorar este mensaje.</p>
       
       <div class="footer">
-        <strong>Díaz IA Studio</strong> • <a href="mailto:info@diaziastudio.com" style="color: #00FF66; text-decoration: none;">diaziastudio.com</a><br>
+        <strong>Díaz IA Studio</strong> • <a href="mailto:info@diaziastudio.com" style="color: #00F0FF; text-decoration: none;">diaziastudio.com</a><br>
         Notificación transaccional de seguridad enviada conforme al RGPD (UE 2016/679) y la LSSI. No contiene publicidad.
       </div>
     </div>
