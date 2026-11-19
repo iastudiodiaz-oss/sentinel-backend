@@ -168,7 +168,8 @@ class AuthService {
    * 3. Inicio de Sesión (Login) con bcrypt y comprobación de verificación previa
    */
   async login({ email, password }) {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
 
     const res = await db.query('SELECT id, name, email, phone, password_hash, friend_code, is_verified, is_active FROM users WHERE email = $1', [cleanEmail]);
 
@@ -193,8 +194,17 @@ class AuthService {
       throw error;
     }
 
-    // Comprobar contraseña con bcrypt
-    const isPasswordValid = await comparePassword(password, user.password_hash);
+    // Comprobar contraseña con bcrypt (con soporte para espacios accidentales y variantes)
+    let isPasswordValid = await comparePassword(cleanPassword, user.password_hash);
+    if (!isPasswordValid && cleanPassword.toLowerCase().startsWith('sentinel-')) {
+      const normalized = 'Sentinel-' + cleanPassword.slice(9).trim();
+      isPasswordValid = await comparePassword(normalized, user.password_hash);
+    }
+    if (!isPasswordValid && cleanPassword.toLowerCase().startsWith('sentinel')) {
+      const normalizedWithDash = 'Sentinel-' + cleanPassword.slice(8).replace(/^[-_\s]+/, '').trim();
+      isPasswordValid = await comparePassword(normalizedWithDash, user.password_hash);
+    }
+
     if (!isPasswordValid) {
       const error = new Error('Credenciales incorrectas.');
       error.statusCode = 401;
@@ -308,7 +318,7 @@ class AuthService {
     const hashedPassword = await hashPassword(tempPassword);
 
     // Actualizar contraseña en la base de datos
-    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, user.id]);
+    await db.query('UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [hashedPassword, user.id]);
 
     // Enviar correo oficial con Resend
     await transporter.sendMail({
