@@ -9,8 +9,8 @@ require('dotenv').config();
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'sentinel_fallback_access_key_2026';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sentinel_fallback_refresh_key_2026';
-const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
-const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '30d';
+const ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '30d';
+const REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '90d';
 
 /**
  * Hash seguro de contraseña con salt rounds de grado militar (10)
