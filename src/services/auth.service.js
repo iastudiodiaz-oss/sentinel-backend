@@ -336,6 +336,49 @@ class AuthService {
       message: `Se ha enviado un correo a ${user.email} con tu usuario, código y una nueva contraseña de acceso temporal.`
     };
   }
+
+  /**
+   * 7. Cambio de Contraseña (desde Perfil o tras recuperación)
+   */
+  async changePassword({ userId, email, newPassword }) {
+    if (!newPassword || newPassword.trim().length < 6) {
+      const error = new Error('La nueva contraseña debe contener al menos 6 caracteres.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const cleanPass = newPassword.trim();
+    const hashedPassword = await hashPassword(cleanPass);
+
+    let query = '';
+    let params = [];
+
+    if (userId) {
+      query = 'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, email, name';
+      params = [hashedPassword, userId];
+    } else if (email) {
+      query = 'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2 RETURNING id, email, name';
+      params = [hashedPassword, email.trim().toLowerCase()];
+    } else {
+      const error = new Error('Identificador de usuario o email requerido.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const res = await db.query(query, params);
+    if (res.rows.length === 0) {
+      const error = new Error('Usuario no encontrado.');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    logger.info(`Contraseña actualizada exitosamente para usuario ${res.rows[0].email}`);
+
+    return {
+      success: true,
+      message: 'Contraseña actualizada con éxito.'
+    };
+  }
 }
 
 module.exports = new AuthService();

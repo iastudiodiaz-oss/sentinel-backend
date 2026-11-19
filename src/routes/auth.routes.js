@@ -28,7 +28,16 @@ router.post('/logout', authController.logout);
 // 6. Recuperación de credenciales / contraseña por correo
 router.post('/forgot-password', authLimiter, authController.forgotPassword);
 
-// 7. Obtener perfil autenticado actual (Protegido por JWT)
+// 7. Cambio de contraseña (protegido por JWT o con email validado)
+router.post('/change-password', (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authenticateJwt(req, res, next);
+  }
+  next();
+}, authController.changePassword);
+
+// 8. Obtener perfil autenticado actual (Protegido por JWT)
 router.get('/me', authenticateJwt, authController.getMe);
 
 module.exports = router;

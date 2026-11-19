@@ -70,6 +70,17 @@ class AuthController {
     }
   }
 
+  async changePassword(req, res, next) {
+    try {
+      const { newPassword, email } = req.body;
+      const userId = req.user ? req.user.id : null;
+      const result = await authService.changePassword({ userId, email, newPassword });
+      return successResponse(res, result, result.message, 200);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getMe(req, res) {
     return successResponse(res, { user: req.user }, 'Perfil de usuario autenticado.');
   }
