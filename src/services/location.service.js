@@ -101,7 +101,29 @@ class LocationService {
           ELSE FALSE
         END AS is_online,
         COALESCE(t.is_sos, FALSE) AS is_sos,
-        t.updated_at
+        t.updated_at,
+        COALESCE((
+          SELECT COUNT(*)::int
+          FROM messages m
+          JOIN chat_participants cp ON cp.chat_id = m.chat_id AND cp.user_id = $1
+          WHERE m.sender_id = u.id AND m.status != 'READ'
+        ), 0) AS unread_messages,
+        (
+          SELECT m.content
+          FROM messages m
+          JOIN chat_participants cp ON cp.chat_id = m.chat_id AND cp.user_id = $1
+          WHERE m.sender_id = u.id AND m.status != 'READ'
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_unread_message,
+        (
+          SELECT m.id::text
+          FROM messages m
+          JOIN chat_participants cp ON cp.chat_id = m.chat_id AND cp.user_id = $1
+          WHERE m.sender_id = u.id AND m.status != 'READ'
+          ORDER BY m.created_at DESC
+          LIMIT 1
+        ) AS last_unread_message_id
       FROM friendships f
       JOIN users u ON (u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END)
       LEFT JOIN telemetry_live t ON t.user_id = u.id

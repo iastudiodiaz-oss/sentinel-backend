@@ -283,6 +283,17 @@ class ChatService {
     `;
 
     const res = await db.query(query, [userId, directChat.id, limit]);
+
+    // Marcar como leidos los mensajes recibidos del amigo
+    try {
+      await db.query(
+        `UPDATE messages SET status = 'READ' WHERE chat_id = $1 AND sender_id != $2 AND status != 'READ';`,
+        [directChat.id, userId]
+      );
+    } catch (e) {
+      // Silencioso
+    }
+
     return res.rows.map(m => ({
       id: m.id,
       chatId: m.chat_id,
