@@ -29,6 +29,9 @@ const locationRoutes = require('./src/routes/location.routes');
 const app = express();
 const server = http.createServer(app);
 
+// Habilitar 'trust proxy' para Render / Cloudflare (para obtener la IP real del cliente y no la del proxy)
+app.set('trust proxy', 1);
+
 // Inicializar WebSockets y enlazar con Express
 const io = initSocket(server);
 app.set('io', io);
